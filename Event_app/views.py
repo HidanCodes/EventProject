@@ -1,11 +1,44 @@
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from Event_app.models import Event
-from Event_app.serializers import EventSerializer
+from Event_app.serializers import EventSerializer, UserSimpleSerializer
+
+
+class RegisterView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = UserSimpleSerializer(data=request.data)
+
+        if serializer.is_valid():
+            # حذف فیلد تایید رمز عبور قبل از ذخیره سازی
+            validated_data = serializer.validated_data
+            validated_data.pop('password2')
+
+            # هش کردن رمز عبور
+            validated_data['password'] = make_password(validated_data['password'])
+
+            # ایجاد کاربر جدید
+            user = User.objects.create(**validated_data)
+
+            # تولید توکن برای کاربر جدید
+            refresh = RefreshToken.for_user(user)
+
+            return Response({
+                'message': 'کاربر با موفقیت ثبت نام شد',
+                'username': user.username,
+                'refresh': str(refresh),
+                'access': str(refresh.access_token)
+            }, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class EventListCreateView(APIView):

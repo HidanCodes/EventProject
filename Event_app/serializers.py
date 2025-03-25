@@ -4,11 +4,22 @@ from django.contrib.auth.models import User
 
 
 class UserSimpleSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=True)
+    password2 = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name']
+        fields = ['username', 'email', 'password', 'password2', 'first_name', 'last_name']
+        extra_kwargs = {
+            'first_name': {'required': False},
+            'last_name': {'required': False}
+        }
 
+    def validate(self, attrs):
+        # چک کردن تطابق رمزهای عبور
+        if attrs['password'] != attrs['password2']:
+            raise serializers.ValidationError({"password": "رمزهای عبور مطابقت ندارند"})
+        return attrs
 
 class EventSerializer(serializers.ModelSerializer):
 
