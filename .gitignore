@@ -37,7 +37,7 @@ ENV/
 .venv
 env.bak/
 venv.bak/
-
+manage.py
 # IDE
 .idea/
 .vscode/
