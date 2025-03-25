@@ -9,7 +9,7 @@ class Event(models.Model):
     description = models.TextField()
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
     capacity = models.PositiveIntegerField(validators=[MinValueValidator(1)])
-    participants = models.ManyToManyField(User, related_name='participants')
+    participants = models.ManyToManyField(User, related_name='participants',blank=True,null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
