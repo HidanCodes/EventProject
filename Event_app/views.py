@@ -80,4 +80,5 @@ class EventDetailView(APIView):
             )
 
         event.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'detail': 'رویداد با موفقیت حذف شد.'},
+                        status=status.HTTP_204_NO_CONTENT)
