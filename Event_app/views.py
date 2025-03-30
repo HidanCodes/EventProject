@@ -8,7 +8,7 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from Event_app.models import Event
-from Event_app.serializers import EventSerializer, UserSimpleSerializer
+from Event_app.serializers import EventSerializer, UserSimpleSerializer, JoinEventSerializer
 
 
 class RegisterView(APIView):
@@ -115,3 +115,66 @@ class EventDetailView(APIView):
         event.delete()
         return Response({'detail': 'رویداد با موفقیت حذف شد.'},
                         status=status.HTTP_204_NO_CONTENT)
+
+
+class JoinEventView(APIView):
+    """
+    عضویت در رویداد
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        """
+        اضافه کردن کاربر به شرکت‌کنندگان رویداد
+        """
+        event = get_object_or_404(Event, pk=pk)
+
+        serializer = JoinEventSerializer(
+            data={},
+            context={
+                'request': request,
+                'event': event
+            }
+        )
+
+        try:
+            serializer.is_valid(raise_exception=True)
+            updated_event = serializer.save()
+
+            # بازگرداندن اطلاعات رویداد به‌روزرسانی شده
+            response_serializer = EventSerializer(updated_event)
+            return Response(response_serializer.data)
+
+        except Exception as e:
+            return Response(
+                {'detail': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class LeaveEventView(APIView):
+    """
+    خروج از رویداد
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        """
+        حذف کاربر از شرکت‌کنندگان رویداد
+        """
+        event = get_object_or_404(Event, pk=pk)
+
+        # بررسی آیا کاربر در رویداد حضور دارد
+        if request.user not in event.participants.all():
+            return Response(
+                {'detail': 'شما در این رویداد عضو نیستید.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # حذف کاربر از شرکت‌کنندگان
+        event.participants.remove(request.user)
+
+        # بازگرداندن اطلاعات رویداد به‌روزرسانی شده
+        serializer = EventSerializer(event)
+        return Response(serializer.data)
+
