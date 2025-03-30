@@ -179,3 +179,22 @@ class LeaveEventView(APIView):
         serializer = EventSerializer(event)
         return Response(serializer.data)
 
+
+class MyEventsView(APIView):
+    """
+    نمایش رویدادهای ساخته شده و رویدادهای عضو شده توسط کاربر
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """
+        دریافت رویدادهای ساخته شده و عضو شده
+        """
+
+        joined_events = Event.objects.filter(participants=request.user)
+
+        return Response({
+            'joined_events': EventSerializer(joined_events, many=True).data
+        })
+
+
