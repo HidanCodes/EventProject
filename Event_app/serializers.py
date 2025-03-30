@@ -50,17 +50,3 @@ class EventSerializer(serializers.ModelSerializer):
         return obj.participants.count()
 
 
-class JoinEventSerializer(serializers.Serializer):
-    """
-    سریالایزر برای عضویت در رویداد
-    """
-
-    def create(self, validated_data):
-        """
-        افزودن کاربر به شرکت‌کنندگان رویداد
-        """
-        user = self.context['request'].user
-        event = self.context.get('event')
-
-        event.add_participant(user)
-        return event

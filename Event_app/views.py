@@ -8,7 +8,7 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from Event_app.models import Event
-from Event_app.serializers import EventSerializer, UserSimpleSerializer, JoinEventSerializer
+from Event_app.serializers import EventSerializer, UserSimpleSerializer
 
 
 class RegisterView(APIView):
@@ -136,28 +136,15 @@ class JoinEventView(APIView):
         اضافه کردن کاربر به شرکت‌کنندگان رویداد
         """
         event = get_object_or_404(Event, pk=pk)
-
-        serializer = JoinEventSerializer(
-            data={},
-            context={
-                'request': request,
-                'event': event
-            }
-        )
-
-        try:
-            serializer.is_valid(raise_exception=True)
-            updated_event = serializer.save()
-
-            # بازگرداندن اطلاعات رویداد به‌روزرسانی شده
-            response_serializer = EventSerializer(updated_event)
-            return Response(response_serializer.data)
-
-        except Exception as e:
+        if request.user in event.participants.all():
             return Response(
-                {'detail': str(e)},
+                {'detail': 'شما در این رویداد عضو هستید.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        event.participants.add(request.user)
+        serializer = EventSerializer(event)
+        return Response(serializer.data)
+
 
 
 class LeaveEventView(APIView):
