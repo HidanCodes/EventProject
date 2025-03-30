@@ -61,7 +61,8 @@ class EventListCreateView(APIView):
         """
         serializer = EventSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            serializer.save()
+            event = serializer.save()
+            event.participants.add(request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -111,6 +112,13 @@ class EventDetailView(APIView):
                 {'detail': 'فقط سازنده مجاز به حذف رویداد است.'},
                 status=status.HTTP_403_FORBIDDEN
             )
+        if event.participants.count() != 1:
+            return Response(
+                {'detail': 'شما نمیتوانید رویداد را حذف کنید، چون رویداد دارای شرکت کننده میباشد.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+
 
         event.delete()
         return Response({'detail': 'رویداد با موفقیت حذف شد.'},
@@ -163,6 +171,12 @@ class LeaveEventView(APIView):
         حذف کاربر از شرکت‌کنندگان رویداد
         """
         event = get_object_or_404(Event, pk=pk)
+
+        if request.user == event.creator:
+            return Response(
+                {'detail': 'شما سازنده این رویداد هستید، نمیتوانید رویداد را ترک کنید، در صورت نیاز میتوانید رویداد را حذف کنید.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         # بررسی آیا کاربر در رویداد حضور دارد
         if request.user not in event.participants.all():
