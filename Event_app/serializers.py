@@ -49,4 +49,10 @@ class EventSerializer(serializers.ModelSerializer):
         """
         return obj.participants.count()
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if self.context.get('exclude_members'):
+            representation.pop('participants', None)
+        return representation
+
 

@@ -52,7 +52,7 @@ class EventListCreateView(APIView):
         دریافت لیست تمام رویدادها
         """
         events = Event.objects.all()
-        serializer = EventSerializer(events, many=True)
+        serializer = EventSerializer(events, many=True,context={'exclude_members': True})
         return Response(serializer.data)
 
     def post(self, request):
@@ -78,8 +78,12 @@ class EventDetailView(APIView):
         دریافت جزئیات یک رویداد
         """
         event = get_object_or_404(Event, pk=pk)
-        serializer = EventSerializer(event)
-        return Response(serializer.data)
+        if event.creator == request.user:
+            serializer = EventSerializer(event)
+            return Response(serializer.data)
+        else:
+            serializer = EventSerializer(event,context={'exclude_members': True})
+            return Response(serializer.data)
 
     def put(self, request, pk):
         """
@@ -94,7 +98,7 @@ class EventDetailView(APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        serializer = EventSerializer(event, data=request.data, context={'request': request})
+        serializer = EventSerializer(event, data=request.data, context={'request': request},partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
