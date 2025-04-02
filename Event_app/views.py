@@ -10,7 +10,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from Event_app.models import Event
 from Event_app.serializers import EventSerializer, UserSimpleSerializer
 
-
+class Welcome(APIView):
+    def get (self,request):
+        return Response ("Welcome to my EventPoject")
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 

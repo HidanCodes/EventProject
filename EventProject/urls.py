@@ -17,10 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from Event_app.views import EventListCreateView
+from Event_app.views import Welcome
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', Welcome.as_view(), name='Welcome'),
     path('api/', include('Event_app.urls')),
 
 
