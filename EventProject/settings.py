@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'Event_app.apps.EventAppConfig',
     'rest_framework',
     'rest_framework_simplejwt',
+    'drf_yasg',
 
 ]
 
