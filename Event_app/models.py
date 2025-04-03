@@ -20,17 +20,6 @@ class Event(models.Model):
         if Event.objects.filter(creator=self.creator).count() >= 10:
             raise ValidationError('شما مجاز به ساخت بیش از 10 رویداد نیستید.')
 
-    def add_participant(self, user):
-        """
-        افزودن شرکت‌کننده به رویداد با محدودیت ظرفیت
-        """
-        if self.participants.count() >= self.capacity:
-            raise ValidationError('ظرفیت رویداد تکمیل شده است.')
-
-        if user in self.participants.all():
-            raise ValidationError('شما قبلاً در این رویداد عضو شده‌اید.')
-
-        self.participants.add(user)
 
     def save(self, *args, **kwargs):
         self.full_clean()

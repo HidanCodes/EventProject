@@ -61,6 +61,12 @@ class EventListCreateView(APIView):
         """
         ایجاد رویداد جدید
         """
+        if Event.objects.filter(creator=request.user).count() >= 10:
+            return Response(
+                {'detail': 'شما مجاز به ساخت بیش از 10 رویداد نیستید.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         serializer = EventSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             event = serializer.save()
@@ -147,8 +153,13 @@ class JoinEventView(APIView):
                 {'detail': 'شما در این رویداد عضو هستید.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        if event.participants.count() >= event.capacity:
+            return Response(
+                {'detail': 'ظرفیت تکمیل است'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         event.participants.add(request.user)
-        serializer = EventSerializer(event)
+        serializer = EventSerializer(event,context={'exclude_members': True})
         return Response(serializer.data)
 
 
